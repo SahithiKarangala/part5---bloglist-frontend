@@ -8,7 +8,11 @@ const App = () => {
   const [username, setUserName] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+  const [title, setTitle] = useState('')
+  const [author, setAuthor] = useState('')
+   const [blogUrl, setBlogUrl] = useState('')
   const [errorMessage, setErrorMessage] = useState(null)
+  const [successMessage, setSuccessMessage] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -21,6 +25,7 @@ const App = () => {
     if(loggedUserJSON){
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
+      blogService.tokenSetter(user.token)
     }
   },[])
 
@@ -28,6 +33,8 @@ const App = () => {
     event.preventDefault()
     try{
       const user = await loginService.login({ username, password })
+      //setting the token once the user is logged in so that the user can create blogs.
+      blogService.tokenSetter(user.token) 
       // making the user persist in the local storage so that it is not lost when the page is refreshed
       window.localStorage.setItem('loggedBlogUser',JSON.stringify(user))
 
@@ -44,6 +51,8 @@ const App = () => {
 
   const handleLogOut = ()=>{
     window.localStorage.removeItem('loggedBlogUser')
+    blogService.tokenSetter(null)
+    setUser(null)
   }
 
   const loginForm = ()=>{
@@ -65,7 +74,58 @@ const App = () => {
         </form>
       </div>
     )
-    
+  }
+
+  const handleCreateBlog = async (event) => {
+    event.preventDefault() 
+    try{
+      const newBlog = {
+        title: title, 
+        author: author,
+        url: blogUrl
+      }
+      const createdBlog = await blogService.create(newBlog)
+      setBlogs(blogs.concat(createdBlog))
+      setSuccessMessage(`a new blog "${createdBlog.title}" by ${createdBlog.author} added`)
+      console.log('success message', successMessage)
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 5000)
+      setTitle('')
+      setAuthor('')
+      setBlogUrl('')
+    }catch{
+      setErrorMessage('error creating blog')
+      setTimeout(()=>{
+        setErrorMessage(null)
+      },5000)
+    }
+  }
+
+  const createBlogForm = ()=>{
+    return (
+      <div>
+        <h2>Create Blog</h2>
+        <form onSubmit={handleCreateBlog}>
+          <div>
+            <label>title:
+              <input type="text" value={title} onChange={({target})=>setTitle(target.value)}></input>
+            </label>
+          </div>
+          <div>
+            <label>author:
+              <input type="text" value={author} onChange={({target})=>setAuthor(target.value)}></input>
+            </label>
+          </div>
+          <div>
+            <label>url:
+              <input type="url" value={blogUrl} onChange={({target})=>setBlogUrl(target.value)}></input>
+            </label>
+          </div>
+          <button type="submit">Create</button>
+        </form>
+      </div>
+    )
   }
 
   const blogListForm = ()=>{
@@ -81,11 +141,14 @@ const App = () => {
 
   return (
     <div>
+      {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
+      {errorMessage && <div style={{color:'red'}}>{errorMessage}</div>}
       {!(user) && loginForm()}
       {user && (
         <div>
           <p>{user.name} logged in !!!!!</p>
           <button onClick={handleLogOut}>Logout</button>
+          {createBlogForm()}
           {blogListForm()}
         </div>
         )
