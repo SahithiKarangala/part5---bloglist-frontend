@@ -110,6 +110,7 @@ const App = () => {
       // never change ownership, and findByIdAndUpdate only $sets keys that
       // are present, so omitting it leaves the stored reference untouched
       // no matter what shape blog.user happens to be.
+      // eslint-disable-next-line no-unused-vars
       const { user , ...blogWithoutUser } = blog
       const updatedBlog = { ...blogWithoutUser, likes: blog.likes + 1 }
       const returnedBlog = await blogService.update(blog.id, updatedBlog)
@@ -187,7 +188,7 @@ const App = () => {
   return (
     <div>
       {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
-      {errorMessage && <div style={{ color:'red' }}>{errorMessage}</div>}
+      {errorMessage && <div style={{ color: 'red', borderStyle: 'solid' }}>{errorMessage}</div>}
       {!(user) && loginForm()}
       {user && (
         <div>

@@ -1,11 +1,12 @@
-import axios from "axios";
+import axios from 'axios'
 
-const baseUrl = 'api/login' 
+const baseUrl = 'api/login'
 
-const login = async (credentials)=>{
-    const response = await axios.post(baseUrl, credentials)
-    // console.log('response from login', response.data)
-    return response.data 
+const login = async (credentials) => {
+  const response = await axios.post(baseUrl, credentials)
+  // console.log('response from login', response.data)
+  return response.data
 }
 
+// eslint-disable-next-line object-curly-spacing
 export default {login}
